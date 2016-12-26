@@ -6,6 +6,7 @@ set -e
 CURDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 METADATA=${CURDIR}/../metadata.yml
 FORMULA_NAME=$(cat $METADATA | python -c "import sys,yaml; print yaml.load(sys.stdin)['name']")
+RUNNER=${RUNNER:-state.show_sls}
 
 ## Overrideable parameters
 PILLARDIR=${PILLARDIR:-${CURDIR}/pillar}
@@ -126,7 +127,7 @@ prepare() {
 run() {
     for pillar in ${PILLARDIR}/*.sls; do
         state_name=$(basename ${pillar%.sls})
-        salt_run --id=${state_name} state.show_sls ${FORMULA_NAME} || (log_err "Execution of ${FORMULA_NAME}.${state_name} failed"; exit 1)
+        salt_run --id=${state_name} ${RUNNER} ${FORMULA_NAME} || (log_err "Execution of ${FORMULA_NAME}.${state_name} failed"; exit 1)
     done
 }
 
